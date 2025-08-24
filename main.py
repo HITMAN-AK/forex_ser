@@ -21,7 +21,7 @@ app = FastAPI()
 phash = CryptContext(schemes=["bcrypt"], deprecated="auto")
 scheduler = BackgroundScheduler()
 origins = [
-    "http://localhost:3000",
+    "https://aiforexpredictor.vercel.app/",
 ]
 
 app.add_middleware(
@@ -83,6 +83,8 @@ async def predict(data: Prediction,r:Request,db:Session=Depends(get_db)):
 @app.post("/history")
 def gethistory(r:Request,db:Session=Depends(get_db)):
     auth_header = r.headers.get("Authorization")
+    if not auth_header:
+        return [] 
     token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
