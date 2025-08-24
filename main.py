@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from typing import Optional
 import models
 from pydantic import BaseModel;
+import pytz
 from twelvedata import TDClient
 from datetime import datetime, timedelta
 from database import SessionLocal, engine
@@ -31,7 +32,7 @@ app.add_middleware(
     allow_methods=["*"],  
     allow_headers=["*"],  
 )
-
+IST = pytz.timezone("Asia/Kolkata")
 td = TDClient(apikey="f00c068b148d4b98808601c219e1260e")
 SECRET_KEY = "k0rrscb0cggasdada1c219e1260e"
 ALGORITHM = "HS256"
@@ -240,34 +241,34 @@ def findtrend(openprice: str, closeprice: str) -> str:
 
 
 def historyupdate():
-    res = requests.post("https://aiforexpredictor.vercel.app/")
+    res = requests.post("https://forexserver-frrn.onrender.com/history")
     db = SessionLocal()
-    now = datetime.now()
+    now = datetime.now(IST)  
     histories = db.query(models.Historyfalse).all()
     updated_count = 0
+
     for h in histories:
-
         history_dt_str = f"{h.date} {h.close_time}"
-
         history_dt = datetime.strptime(history_dt_str, "%a %b %d %Y %I:%M:%S %p")
-
         if history_dt < now:
-            date=h.date
-            time=h.close_time
-            cformat=changedatetimeformat(date,time)
-            ohlc =get_past_24h_ohlc(cformat["date"],cformat["open_time"])
-            openat=h.open_at
-            closeat=ohlc[23][3]
-            trend=findtrend(openat,closeat)
+            date = h.date
+            time = h.close_time
+            cformat = changedatetimeformat(date, time)
+            
+            ohlc = get_past_24h_ohlc(cformat["date"], cformat["open_time"])
+            openat = h.open_at
+            closeat = ohlc[23][3]
+            trend = findtrend(openat, closeat)
+
             htruedetails = models.Historytrue(
-            user_id=h.user_id,
-            date=h.date,
-            open_at=h.open_at,
-            close_at=h.close_at,
-            open_time=h.open_time,
-            close_time=h.close_time,
-            predicted_trend=h.predicted_trend,
-            actual_trend=trend
+                user_id=h.user_id,
+                date=h.date,
+                open_at=h.open_at,
+                close_at=h.close_at,
+                open_time=h.open_time,
+                close_time=h.close_time,
+                predicted_trend=h.predicted_trend,
+                actual_trend=trend
             )
             db.add(htruedetails)
             db.delete(h)
@@ -275,7 +276,7 @@ def historyupdate():
 
     db.commit()
     db.close()
-    print(f"update success :{updated_count},{res}")
+    print(f"Update success: {updated_count},{res}")
 
 scheduler.add_job(historyupdate, "interval", minutes=1) 
 scheduler.start()
