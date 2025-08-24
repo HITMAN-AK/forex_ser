@@ -250,6 +250,7 @@ def historyupdate():
     for h in histories:
         history_dt_str = f"{h.date} {h.close_time}"
         history_dt = datetime.strptime(history_dt_str, "%a %b %d %Y %I:%M:%S %p")
+        history_dt = IST.localize(history_dt)
         if history_dt < now:
             date = h.date
             time = h.close_time
