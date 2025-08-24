@@ -275,8 +275,8 @@ def historyupdate():
     db.close()
     print(f"update success :{updated_count},{res}")
 
-# scheduler.add_job(historyupdate, "interval", minutes=1) 
-# scheduler.start()
+scheduler.add_job(historyupdate, "interval", minutes=1) 
+scheduler.start()
 
 def hash_password(password: str) -> str:
     return phash.hash(password)
