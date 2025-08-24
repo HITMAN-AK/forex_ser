@@ -21,7 +21,7 @@ app = FastAPI()
 phash = CryptContext(schemes=["bcrypt"], deprecated="auto")
 scheduler = BackgroundScheduler()
 origins = [
-    "https://aiforexpredictor.vercel.app/",
+    "https://aiforexpredictor.vercel.app",
 ]
 
 app.add_middleware(
@@ -240,7 +240,7 @@ def findtrend(openprice: str, closeprice: str) -> str:
 
 
 def historyupdate():
-    res = requests.post("http://127.0.0.1:8000/history")
+    res = requests.post("https://aiforexpredictor.vercel.app/")
     db = SessionLocal()
     now = datetime.now()
     histories = db.query(models.Historyfalse).all()
