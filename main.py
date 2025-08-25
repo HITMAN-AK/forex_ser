@@ -3,6 +3,7 @@ import requests
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+import time
 from passlib.context import CryptContext
 from apscheduler.schedulers.background import BackgroundScheduler
 from typing import Optional
@@ -182,33 +183,37 @@ def predictclose(ohlc):
 
     return f"{predicted_bc:.5f}"
 
-def get_past_24h_ohlc(date_str, time_str):
-
-
+def get_past_24h_ohlc(date_str, time_str, retries=3, delay=2):
     end_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
-    
     end_str = end_dt.strftime("%Y-%m-%d %H:%M:%S")
 
+    for attempt in range(retries):
+        try:
+            ts = td.time_series(
+                symbol="EUR/USD",
+                interval="1h",
+                timezone="Asia/Kolkata",
+                end_date=end_str,
+                order="asc",
+                outputsize=24
+            ).as_json()
 
-    ts = td.time_series(
-        symbol="EUR/USD",
-        interval="1h",      
-        timezone="Asia/Kolkata",
-        end_date=end_str,
-        order="asc",
-        outputsize=24
-    ).as_json()
+            ni = []
+            for candle in ts:
+                o = float(candle['open'])
+                h = float(candle['high'])
+                l = float(candle['low'])
+                c = float(candle["close"])
+                ni.append([o, h, l, c])
 
+            return ni
 
-    ni = []
-    for candle in ts:
-        o = float(candle['open'])
-        h = float(candle['high'])
-        l = float(candle['low'])
-        c = float(candle["close"])
-        ni.append([o, h, l, c])
-
-    return ni
+        except Exception as e:
+            print(f"[Retry {attempt+1}] Error fetching OHLC: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise 
 
 
 def changedatetimeformat(date,opentime):
