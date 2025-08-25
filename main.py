@@ -177,7 +177,7 @@ def predictclose(ohlc):
 
     prediction = lstm_model.predict(new_scaled)
 
-    predicted_full = scaler.inverse_transform(np.concatenate((np.zeros((1, 3)), prediction), axis=1))
+    predicted_full = scaler.inverse_transform(prediction)
 
     predicted_bc = predicted_full[0, -1]
 
