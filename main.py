@@ -64,7 +64,7 @@ async def predict(data: Prediction,r:Request,db:Session=Depends(get_db)):
         cformat=changedatetimeformat(data.date,data.open_time)
         ohlc =get_past_24h_ohlc(cformat["date"],cformat["open_time"])
         predictedclose=predictclose(ohlc)
-        openat=ohlc[23][0]
+        openat=ohlc[23][3]
         trend=findtrend(openat,predictedclose)
         hdetails = models.Historyfalse(
             user_id=username,
@@ -179,7 +179,7 @@ def predictclose(ohlc):
 
     predicted_full = scaler.inverse_transform(prediction)
 
-    predicted_bc = predicted_full[0,0]
+    predicted_bc = predicted_full[0,-1]
 
     return f"{predicted_bc:.5f}"
 
@@ -263,7 +263,7 @@ def historyupdate():
             
             ohlc = get_past_24h_ohlc(cformat["date"], cformat["open_time"])
             openat = h.open_at
-            closeat = ohlc[23][0]
+            closeat = ohlc[23][3]
             trend = findtrend(openat, closeat)
 
             htruedetails = models.Historytrue(
