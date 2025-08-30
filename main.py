@@ -193,6 +193,7 @@ def get_past_24h_ohlc(date_str, time_str, retries=3, delay=2):
                 symbol="EUR/USD",
                 interval="1h",
                 timezone="Asia/Kolkata",
+                dp=5,
                 end_date=end_str,
                 order="asc",
                 outputsize=24
